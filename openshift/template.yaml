@@ -30,7 +30,7 @@ objects:
                 memory: ${MEMORY_REQUEST}
             ports:
               - name: bug-master-port
-                containerPort: ${BUG_MASTER_PORT}
+                containerPort: 8080
             env:
             - name: LOG_LEVEL
               value: ${LOG_LEVEL}
@@ -65,9 +65,9 @@ objects:
   spec:
     ports:
       - name: bug-master-port
-        port: ${BUG_MASTER_PORT}
+        port: 8080
         protocol: TCP
-        targetPort: ${{BUG_MASTER_PORT}}
+        targetPort: 8080
     selector:
       app: bug-master
            
@@ -75,29 +75,27 @@ parameters:
 - name: IMAGE_NAME
   value: "quay.io/eerez/bug_master_bot"
 - name: IMAGE_TAG
-  value: dev
+  value: "dev"
   required: true
 - name: CPU_LIMIT
-  value: 500m
+  value: "500m"
 - name: MEMORY_LIMIT
-  value: 2000Mi
+  value: "2000Mi"
 - name: CPU_REQUEST
-  value: 300m
+  value: "300m"
 - name: MEMORY_REQUEST
-  value: 400Mi
-- name: BUG_MASTER_PORT
-  value: 8080
+  value: "400Mi"
 - name: LOG_LEVEL
-  value: INFO
+  value: "INFO"
 - name: RELOAD_RESULTS_DATA
-  value: ok
+  value: "ok"
 - name: HTTP_PROTOCOL_TYPE
-  value: httptools
+  value: "httptools"
 - name: BUG_MASTER_SECRETS_NAME
-  value: bug-master-secrets
+  value: "bug-master-secrets"
 - name: BUG_MASTER_SIGNING_SECRET_KEY
-  value: bug-master-signing-secret-key
+  value: "bug-master-signing-secret-key"
 - name: BUG_MASTER_BOT_USER_TOKEN_KEY
-  value: bug-master-bot-user-token-key
+  value: "bug-master-bot-user-token-key"
 - name: BUG_MASTER_APP_TOKEN_KEY
-  value: bug-master-app-token-key
+  value: "bug-master-app-token-key"
