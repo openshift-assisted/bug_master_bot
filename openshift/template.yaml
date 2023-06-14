@@ -73,9 +73,8 @@ objects:
            
 parameters:
 - name: IMAGE_NAME
-  value: "quay.io/eerez/bug_master_bot"
+  value: "quay.io/app-sre/bug-master"
 - name: IMAGE_TAG
-  value: "dev"
   required: true
 - name: CPU_LIMIT
   value: "500m"
