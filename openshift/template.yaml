@@ -30,7 +30,7 @@ objects:
                 memory: ${MEMORY_REQUEST}
             ports:
               - name: bug-master-port
-                containerPort: 8080
+                containerPort: ${{WEBSERVER_PORT}}
             env:
             - name: LOG_LEVEL
               value: ${LOG_LEVEL}
@@ -65,9 +65,9 @@ objects:
   spec:
     ports:
       - name: bug-master-port
-        port: 8080
+        port: ${{WEBSERVER_PORT}}
         protocol: TCP
-        targetPort: 8080
+        targetPort: ${{WEBSERVER_PORT}}
     selector:
       app: bug-master
            
@@ -90,6 +90,8 @@ parameters:
   value: "ok"
 - name: HTTP_PROTOCOL_TYPE
   value: "httptools"
+- name: WEBSERVER_PORT
+  value: "8080"
 - name: BUG_MASTER_SECRETS_NAME
   value: "bug-master-secrets"
 - name: BUG_MASTER_SIGNING_SECRET_KEY
