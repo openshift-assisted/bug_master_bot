@@ -33,7 +33,7 @@ objects:
                 containerPort: ${{WEBSERVER_PORT}}
             env:
             - name: LOG_LEVEL
-              value: ${LOG_LEVEL}
+              value: ${{LOG_LEVEL}}
             - name: WEBSERVER_PORT
               value: ${WEBSERVER_PORT}
             - name: RELOAD_RESULTS_DATA
@@ -85,7 +85,7 @@ parameters:
 - name: MEMORY_REQUEST
   value: "400Mi"
 - name: LOG_LEVEL
-  value: "INFO"
+  value: "10"
 - name: RELOAD_RESULTS_DATA
   value: "ok"
 - name: HTTP_PROTOCOL_TYPE
