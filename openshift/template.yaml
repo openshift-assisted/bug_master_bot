@@ -33,7 +33,7 @@ objects:
                 containerPort: ${{WEBSERVER_PORT}}
             env:
             - name: LOG_LEVEL
-              value: ${{LOG_LEVEL}}
+              value: ${LOG_LEVEL}
             - name: WEBSERVER_PORT
               value: ${WEBSERVER_PORT}
             - name: RELOAD_RESULTS_DATA
