@@ -64,12 +64,13 @@ objects:
     name: bug-master-service
   spec:
     ports:
-      - name: bug-master-port
-        port: ${{WEBSERVER_PORT}}
-        protocol: TCP
-        targetPort: ${{WEBSERVER_PORT}}
+    - name: bug-master-port
+      port: ${{WEBSERVER_PORT}}
+      protocol: TCP
+      targetPort: ${{WEBSERVER_PORT}}
     selector:
       app: bug-master
+    type: NodePort
            
 parameters:
 - name: IMAGE_NAME
