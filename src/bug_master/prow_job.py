@@ -34,7 +34,9 @@ class ProwResource:
         build_id = labels.get("prow.k8s.io/build-id", "")
         variant = ""
 
-        container_args = spec.get("pod_spec", {}).get("containers", [{}])[0].get("args", [])
+        container_args = (
+            spec.get("pod_spec", {}).get("containers", [{}])[0].get("args", [])
+        )
         for k, v in [a.replace("--", "").split("=") for a in container_args]:
             if k == "variant":
                 variant = v
@@ -55,7 +57,9 @@ class ProwResource:
 class ProwJobFailure:
     BASE_STORAGE_URL = "https://storage.googleapis.com/origin-ci-test/logs/"
     MAIN_PAGE_URL = "https://prow.ci.openshift.org/view/gs/origin-ci-test/logs"
-    DIRS_STORAGE_URL = "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/"
+    DIRS_STORAGE_URL = (
+        "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/"
+    )
     MIN_FILE_SIZE = 4
 
     def __init__(self, failure_link: str, message_ts: str) -> None:
@@ -84,8 +88,12 @@ class ProwJobFailure:
         if not file_path:
             return None
 
-        logger.debug(f"Get file content from {file_path} with base storage link {storage_link}")
-        storage_link = storage_link + "/" if not storage_link.endswith("/") else storage_link
+        logger.debug(
+            f"Get file content from {file_path} with base storage link {storage_link}"
+        )
+        storage_link = (
+            storage_link + "/" if not storage_link.endswith("/") else storage_link
+        )
         full_file_url = urljoin(storage_link, file_path)
         logger.info(f"Opening a session to {full_file_url} ...")
         if (content := await Utils.get_file_content(full_file_url)) is not None:
@@ -94,11 +102,14 @@ class ProwJobFailure:
         return None
 
     @AsyncTTL(time_to_live=86400, maxsize=1024, skip_args=1)
-    async def glob(self, dir_path: str, result: dict) -> Tuple[Optional[str], Optional[str]]:
+    async def glob(
+        self, dir_path: str, result: dict
+    ) -> Tuple[Optional[str], Optional[str]]:
         if dir_path.endswith("*"):
             dir_path = dir_path[:-1]
         dir_content = await self.get_content(
-            dir_path, self._storage_link.replace(self.BASE_STORAGE_URL, self.DIRS_STORAGE_URL)
+            dir_path,
+            self._storage_link.replace(self.BASE_STORAGE_URL, self.DIRS_STORAGE_URL),
         )
 
         navigable_strings = [
@@ -106,7 +117,11 @@ class ProwJobFailure:
             for tag in BeautifulSoup(dir_content, "html.parser").find_all("a")
             if hasattr(tag, "contents")
         ]
-        files = [str(f.pop()).strip() for f in navigable_strings if len(f) > 0 and len(f[0]) > self.MIN_FILE_SIZE]
+        files = [
+            str(f.pop()).strip()
+            for f in navigable_strings
+            if len(f) > 0 and len(f[0]) > self.MIN_FILE_SIZE
+        ]
 
         for file in files:
             file_path = urljoin(dir_path, file)
@@ -147,23 +162,35 @@ class ProwJobFailure:
                 is_applied = True
 
         if reaction or comment:
-            action = Action(action_id, description, self._message_ts, ignore_others=ignore_others)
+            action = Action(
+                action_id, description, self._message_ts, ignore_others=ignore_others
+            )
             action.reaction = Reaction(emoji=reaction) if reaction else None
-            action.comment = Comment(text=comment, type=CommentType.ERROR_INFO, parse="full") if comment else None
+            action.comment = (
+                Comment(text=comment, type=CommentType.ERROR_INFO, parse="full")
+                if comment
+                else None
+            )
             actions.append(action)
 
         if is_applied and "assignees" in config_entry:
-            actions += self._apply_assignee_actions(config_entry, action_id, description)  # assignee inside action
+            actions += self._apply_assignee_actions(
+                config_entry, action_id, description
+            )  # assignee inside action
 
         return actions
 
-    def _apply_assignee_actions(self, config_entry: dict, action_id: str, description: str) -> List[Action]:
+    def _apply_assignee_actions(
+        self, config_entry: dict, action_id: str, description: str
+    ) -> List[Action]:
         link_comment = None
         if "assignees" not in config_entry:
             return []
 
         assignee = config_entry.get("assignees")
-        disable_auto_assign = assignee.get("disable_auto_assign", consts.DISABLE_AUTO_ASSIGN_DEFAULT)
+        disable_auto_assign = assignee.get(
+            "disable_auto_assign", consts.DISABLE_AUTO_ASSIGN_DEFAULT
+        )
         issue_url = assignee.get("issue_url", None)
         users = " ".join([f"@{username}" for username in assignee["users"]])
 
@@ -177,11 +204,17 @@ class ProwJobFailure:
         )
 
         if issue_url:
-            link_comment = Comment(text=f"See <{issue_url}|link> for more information", type=CommentType.MORE_INFO)
+            link_comment = Comment(
+                text=f"See <{issue_url}|link> for more information",
+                type=CommentType.MORE_INFO,
+            )
 
         action = Action(action_id, description, self._message_ts, comment=comment)
         return (
-            [action, Action(action_id, description, self._message_ts, comment=link_comment)]
+            [
+                action,
+                Action(action_id, description, self._message_ts, comment=link_comment),
+            ]
             if link_comment
             else [action]
         )
@@ -201,10 +234,14 @@ class ProwJobFailure:
 
     @classmethod
     def _join_comments(cls, comments: Set[Comment]) -> Comment:
-        comment_text = "\n".join([comment.text for comment in sorted(comments, key=lambda c: c.type.value)])
+        comment_text = "\n".join(
+            [comment.text for comment in sorted(comments, key=lambda c: c.type.value)]
+        )
         return Comment(text=comment_text, type=CommentType.ERROR_INFO, parse="all")
 
-    async def _get_job_actions(self, channel_config: ChannelFileConfig, filter_id: str = None) -> List[Action]:
+    async def _get_job_actions(
+        self, channel_config: ChannelFileConfig, filter_id: str = None
+    ) -> List[Action]:
         """
         :param channel_config:
         :param filter_id: Action filter id as defined in the configuration file
@@ -213,14 +250,22 @@ class ProwJobFailure:
         actions = list()
 
         for action_data in channel_config.actions_items():
-            if filter_id and (action_data.get("action_id") is None or action_data.get("action_id") != filter_id):
+            if filter_id and (
+                action_data.get("action_id") is None
+                or action_data.get("action_id") != filter_id
+            ):
                 continue
 
             ignore_others = action_data.get("ignore_others", None)
 
             conditions = action_data.get(
                 "conditions",
-                [{"contains": action_data.get("contains", ""), "file_path": action_data.get("file_path", "")}],
+                [
+                    {
+                        "contains": action_data.get("contains", ""),
+                        "file_path": action_data.get("file_path", ""),
+                    }
+                ],
             )
 
             for condition in conditions:
@@ -236,7 +281,9 @@ class ProwJobFailure:
         if "{job_name}" in file_path:
             file_path = file_path.format(job_name=self.job_name)
 
-        return await self._update_actions(file_path, contains, config_entry, ignore_others)
+        return await self._update_actions(
+            file_path, contains, config_entry, ignore_others
+        )
 
     async def load(self):
         url = self._raw_link.replace(self.MAIN_PAGE_URL, self.BASE_STORAGE_URL)
@@ -245,6 +292,9 @@ class ProwJobFailure:
             return None
 
         resource = ProwResource.get_prow_resource(json.loads(job_raw_resource))
-        self._storage_link = urljoin(urljoin(self.BASE_STORAGE_URL, resource.full_name + "/"), f"{resource.build_id}/")
+        self._storage_link = urljoin(
+            urljoin(self.BASE_STORAGE_URL, resource.full_name + "/"),
+            f"{resource.build_id}/",
+        )
         self._resource = resource
         return self

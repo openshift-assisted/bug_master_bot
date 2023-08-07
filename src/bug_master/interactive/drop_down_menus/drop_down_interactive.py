@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from bug_master.bug_master_bot import BugMasterBot
-
 from bug_master.interactive.interactive_message import InteractiveMessage
 
 
@@ -69,8 +68,15 @@ class DropDownInteractive(InteractiveMessage, ABC):
         ]
 
     @classmethod
-    def get_new_action(cls, name: str, text: str, type_: str = "select", options: List[str] = None):
-        return {"name": name, "text": text, "type": type_, "options": options if options is not None else []}
+    def get_new_action(
+        cls, name: str, text: str, type_: str = "select", options: List[str] = None
+    ):
+        return {
+            "name": name,
+            "text": text,
+            "type": type_,
+            "options": options if options is not None else [],
+        }
 
     @classmethod
     @abstractmethod

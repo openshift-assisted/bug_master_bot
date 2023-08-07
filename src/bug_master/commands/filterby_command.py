@@ -34,10 +34,18 @@ class FilterByCommand(Command):
         }
 
     async def handle(self) -> Response:
-        channel_info = await self._bot.get_channel_info(self._channel_id) if self._channel_id else {}
+        channel_info = (
+            await self._bot.get_channel_info(self._channel_id)
+            if self._channel_id
+            else {}
+        )
         channel_name = channel_info.get("name", self._channel_id)
 
-        if (channel_config := await self._bot.get_channel_configuration(self._channel_id, channel_name)) is None:
+        if (
+            channel_config := await self._bot.get_channel_configuration(
+                self._channel_id, channel_name
+            )
+        ) is None:
             return self.get_response_with_command(
                 "Can't find channel configurations or that the configurations are not valid"
             )
@@ -69,12 +77,26 @@ class FilterByCommand(Command):
         for message_data in messages_data:
             message = ChannelMessage(**message_data)
             await pool.add_worker(
-                message.id, message.get_message_actions, channel_config=channel_config, filter_id=self._action_id
+                message.id,
+                message.get_message_actions,
+                channel_config=channel_config,
+                filter_id=self._action_id,
             )
             messages.append(message)
 
         actions_map = await pool.start()
-        return list(chain(*[action for action in actions_map for ts, action in action.items() if action]))
+        return list(
+            chain(
+                *[
+                    action
+                    for action in actions_map
+                    for ts, action in action.items()
+                    if action
+                ]
+            )
+        )
 
-    async def _get_message_actions(self, message: ChannelMessage, channel_config: ChannelFileConfig):
+    async def _get_message_actions(
+        self, message: ChannelMessage, channel_config: ChannelFileConfig
+    ):
         return await message.get_message_actions(channel_config, self._action_id)

@@ -1,6 +1,8 @@
 from typing import List
 
-from bug_master.interactive.drop_down_menus.drop_down_interactive import DropDownInteractive
+from bug_master.interactive.drop_down_menus.drop_down_interactive import (
+    DropDownInteractive,
+)
 
 
 class DaysRangeDropDown(DropDownInteractive):

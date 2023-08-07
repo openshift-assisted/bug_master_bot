@@ -15,7 +15,9 @@ from bug_master.interactive import InteractiveResponse
 
 class RouteValidator:
     @classmethod
-    async def validate_event_request(cls, request) -> Tuple[Union[Event, None], Union[Response, None]]:
+    async def validate_event_request(
+        cls, request
+    ) -> Tuple[Union[Event, None], Union[Response, None]]:
         body = await request.body()
 
         event = await events_handler.get_event(await request.json())  # json.loads(body)
@@ -27,7 +29,9 @@ class RouteValidator:
         if isinstance(event, UrlVerificationEvent):
             logger.info("Url verification event - success")
             return None, JSONResponse(
-                content=json.dumps({"challenge": json.loads(body).get("challenge", "")}),
+                content=json.dumps(
+                    {"challenge": json.loads(body).get("challenge", "")}
+                ),
                 status_code=200,
                 media_type="application/json",
             )
@@ -47,7 +51,9 @@ async def handle_event_exception(event: Event, **kwargs):
         logger.error(f"{{{event}}} {base_err}, {e.__class__.__name__} {e}")
         if event.user_id:
             await bot.add_comment(
-                event.user_id, f"{base_err}\n```{{{event}}}```\n" f"Error:\n```{e.__class__.__name__}: {e}```"
+                event.user_id,
+                f"{base_err}\n```{{{event}}}```\n"
+                f"Error:\n```{e.__class__.__name__}: {e}```",
             )
 
 
@@ -55,11 +61,15 @@ async def handle_command_exception(command: Command) -> Response:
     try:
         return await command.handle()
     except BaseException as e:
-        err = f"Got error while handled command {{{command}}}, {e.__class__.__name__} {e}"
+        err = (
+            f"Got error while handled command {{{command}}}, {e.__class__.__name__} {e}"
+        )
         logger.error(err)
 
     await bot.add_comment(channel=command.user_id, comment=err)
-    return command.get_response_with_command("Internal server error. See BugMaster private chat for more information.")
+    return command.get_response_with_command(
+        "Internal server error. See BugMaster private chat for more information."
+    )
 
 
 @app.post("/slack/events")
@@ -73,7 +83,9 @@ async def events(request: Request):
         logger.error(f"Invalid event {event}, {event._data}")
         return JSONResponse({"msg": "Failure", "Code": 401})
 
-    asyncio.get_event_loop().create_task(handle_event_exception(event, channel_info=channel_info))
+    asyncio.get_event_loop().create_task(
+        handle_event_exception(event, channel_info=channel_info)
+    )
     return JSONResponse({"msg": "Success", "Code": 200})
 
 
@@ -100,7 +112,9 @@ async def interactive(request: Request):
     logger.info("Handling new interactive")
 
     raw_body = await request.body()
-    payload = {k.decode(): json.loads(v.pop().decode()) for k, v in parse_qs(raw_body).items()}.get("payload")
+    payload = {
+        k.decode(): json.loads(v.pop().decode()) for k, v in parse_qs(raw_body).items()
+    }.get("payload")
 
     logger.debug(f"Getting next response {payload}")
     return await InteractiveResponse(bot, payload).get_next_response()
