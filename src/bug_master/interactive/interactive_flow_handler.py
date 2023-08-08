@@ -1,4 +1,8 @@
-from bug_master.interactive.drop_down_menus import DaysRangeDropDown, DropDownInteractive, JobsDropDown
+from bug_master.interactive.drop_down_menus import (
+    DaysRangeDropDown,
+    DropDownInteractive,
+    JobsDropDown,
+)
 
 
 class InteractiveFlowHandler:

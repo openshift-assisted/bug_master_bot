@@ -15,7 +15,9 @@ class StatisticsCommand(Command):
 
     def __init__(self, bot: BugMasterBot, **kwargs) -> None:
         super().__init__(bot, **kwargs)
-        self._history_days = self._command_args[0] if self._command_args else self.DEFAULT_STAT_HISTORY
+        self._history_days = (
+            self._command_args[0] if self._command_args else self.DEFAULT_STAT_HISTORY
+        )
 
     @classmethod
     def command(cls):
@@ -59,7 +61,8 @@ class StatisticsCommand(Command):
         for i in range(len(rows_data)):
             job_name = sorted_counter[i][0]
             rows_data[i] = rows_data[i].replace(
-                job_name, f"<{f'https://prow.ci.openshift.org/?job=*{job_name}*'} | {job_name}>"
+                job_name,
+                f"<{f'https://prow.ci.openshift.org/?job=*{job_name}*'} | {job_name}>",
             )
 
         return "\n".join(headers + rows_data), (today - min_date.date()).days + 1
@@ -76,5 +79,9 @@ class StatisticsCommand(Command):
 
         stats, days = self.get_stats(days)
         if not stats:
-            return self.get_response_with_command(f"There are no records for this channel in the last {days} days.")
-        return self.get_response_with_command(f"Statistics for the last {days} days:\n```{stats}```")
+            return self.get_response_with_command(
+                f"There are no records for this channel in the last {days} days."
+            )
+        return self.get_response_with_command(
+            f"Statistics for the last {days} days:\n```{stats}```"
+        )

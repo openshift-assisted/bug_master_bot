@@ -18,7 +18,9 @@ class FileShareEvent(Event):
         logger.info(f"Handling {self.type}, {self._subtype} event")
 
         if self.contain_files:
-            await self._bot.refresh_file_configuration(self._channel_id, self._data.get("files", []), force_create=True)
+            await self._bot.refresh_file_configuration(
+                self._channel_id, self._data.get("files", []), force_create=True
+            )
         return JSONResponse({"msg": "Success", "Code": 200})
 
 
@@ -45,14 +47,18 @@ class FileChangeEvent(Event):
             await self._update_channel_info()
             return await super().get_channel_info()
         except IndexError as e:
-            logger.warning(f"Error while attempt to get channel info in {self._type}:{self._subtype}, {e}")
+            logger.warning(
+                f"Error while attempt to get channel info in {self._type}:{self._subtype}, {e}"
+            )
 
     async def handle(self, **kwargs) -> Response:
         logger.info(f"Handling {self.type}, {self._subtype} event")
         file_info = await self.get_file_info()
 
         if file_info.get("title", "") == CONFIGURATION_FILE_NAME:
-            await self._bot.refresh_file_configuration(self._channel_id, [file_info], user_id=self._user_id)
+            await self._bot.refresh_file_configuration(
+                self._channel_id, [file_info], user_id=self._user_id
+            )
 
         return JSONResponse({"msg": "Success", "Code": 200})
 

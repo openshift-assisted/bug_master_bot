@@ -23,7 +23,9 @@ class JobStatus:
 
 class Utils(ABC):
     GIT_API_FMT = "https://api.github.com/repos/{ORG}/{REPO}/contents/{PATH}"
-    SPYGLASS_JOB_HISTORY_URL_FMT = "https://prow.ci.openshift.org/job-history/gs/origin-ci-test/logs/{JOB_NAME}"
+    SPYGLASS_JOB_HISTORY_URL_FMT = (
+        "https://prow.ci.openshift.org/job-history/gs/origin-ci-test/logs/{JOB_NAME}"
+    )
 
     @classmethod
     async def get_file_content(cls, url: str, headers: dict = None) -> str | None:
@@ -51,7 +53,9 @@ class Utils(ABC):
         return json.loads(content) if content else {}
 
     @classmethod
-    async def get_git_content(cls, repo: str, owner: str, path: str) -> Union[dict, str]:
+    async def get_git_content(
+        cls, repo: str, owner: str, path: str
+    ) -> Union[dict, str]:
         url = cls.GIT_API_FMT.format(ORG=owner, REPO=repo, PATH=path)
         logger.info(f"Loading Git file  content {url}")
 
@@ -87,8 +91,17 @@ class Utils(ABC):
 
         if script:
             logger.info(f"Script found for {job_name}, parsing..")
-            jobs = json.loads(str(script.contents[0]).replace("\n", "").split(" = ")[-1][:-1])
-            return [JobStatus(j.get("ID"), parser.parse(j.get("Started")), j.get("Result") == "SUCCESS") for j in jobs]
+            jobs = json.loads(
+                str(script.contents[0]).replace("\n", "").split(" = ")[-1][:-1]
+            )
+            return [
+                JobStatus(
+                    j.get("ID"),
+                    parser.parse(j.get("Started")),
+                    j.get("Result") == "SUCCESS",
+                )
+                for j in jobs
+            ]
 
         logger.warning(f"Can't find any daya for {job_name}")
         logger.debug(f"File content: {text}")
@@ -113,9 +126,15 @@ class Utils(ABC):
             return jobs
 
         for file_path in prow_configurations.get("files", []):
-            periodics_jobs_config = await cls.get_git_content(repo=repo, owner=owner, path=file_path)
+            periodics_jobs_config = await cls.get_git_content(
+                repo=repo, owner=owner, path=file_path
+            )
             _jobs_config = periodics_jobs_config.get("periodics", {})
-            periodics_names = [job.get("name") for job in _jobs_config if job.get("name").endswith("periodic")]
+            periodics_names = [
+                job.get("name")
+                for job in _jobs_config
+                if job.get("name").endswith("periodic")
+            ]
             logger.debug(f"Found {len(periodics_names)} jobs on {file_path}")
             jobs += periodics_names
 
